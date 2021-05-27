@@ -20,14 +20,15 @@ import java.util.Map;
 /**
  * This class creates records based on RML rules.
  */
-public class NifiRecordsFactory {
+public class NifiRecordsFactory extends RecordsFactory{
 
     private Map<Access, Map<String, Map<String, List<Record>>>> recordCache;
-    private AccessFactory accessFactory;
+    private Access access;
     private Map<String, ReferenceFormulationRecordFactory> referenceFormulationRecordFactoryMap;
 
-    public NifiRecordsFactory(AccessFactory accessFactory) {
-        this.accessFactory = accessFactory;
+    public NifiRecordsFactory(Access access) {
+        super("");
+        this.access = access;
         recordCache = new HashMap<>();
 
         referenceFormulationRecordFactoryMap = new HashMap<>();
@@ -43,6 +44,7 @@ public class NifiRecordsFactory {
      * @return a list of records.
      * @throws IOException
      */
+    @Override
     public List<Record> createRecords(Term triplesMap, QuadStore rmlStore) throws IOException, SQLException, ClassNotFoundException {
         // Get Logical Sources.
         List<Term> logicalSources = Utils.getObjectsFromQuads(rmlStore.getQuads(triplesMap, new NamedNode(NAMESPACES.RML + "logicalSource"), null));
@@ -50,8 +52,6 @@ public class NifiRecordsFactory {
         // Check if there is at least one Logical Source.
         if (!logicalSources.isEmpty()) {
             Term logicalSource = logicalSources.get(0);
-
-            Access access = accessFactory.getAccess(logicalSource, rmlStore);
 
             // Get Logical Source information
             List<Term> referenceFormulations = Utils.getObjectsFromQuads(rmlStore.getQuads(logicalSource, new NamedNode(NAMESPACES.RML + "referenceFormulation"), null));

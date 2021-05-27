@@ -21,6 +21,7 @@ import it.eng.effector.rmlmapper.NifiFlowFileAccess;
 import it.eng.effector.rmlmapper.NifiFlowFileWrite;
 import it.eng.effector.rmlmapper.RMLEngine;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
 import org.apache.nifi.annotation.behavior.WritesAttribute;
@@ -114,19 +115,31 @@ public class RDFMapperProcessor extends AbstractProcessor {
             return;
         }
         logger.debug("nifi flowfile on trigger"+flowFile.getId());
-        NifiFlowFileAccess nifiAccess = new NifiFlowFileAccess(session,flowFile);
-        NifiFlowFileWrite nifiFlowFileWrite= new NifiFlowFileWrite(session,flowFile);
-        RMLEngine engine=new RMLEngine(nifiAccess,nifiFlowFileWrite);
         try {
-            engine.run("/home/piero/Development/sparql/test-ais");
+            final String flowfileid=flowFile.getId()+"";
+            session.write(flowFile, new StreamCallback() {
+                @Override
+                public void process(final InputStream inputStream, OutputStream outputStream) throws IOException {
+                    NifiFlowFileAccess nifiAccess = new NifiFlowFileAccess(inputStream);
+                    NifiFlowFileWrite nifiFlowFileWrite= new NifiFlowFileWrite(outputStream);
+                    RMLEngine engine=new RMLEngine(nifiAccess,nifiFlowFileWrite);
+                    try {
+                        engine.run("/home/piero/Development/sparql/test-nifi",flowfileid);
+                    } catch (Exception e) {
+                        throw new IOException(e);
+                    }
+
+                }
+            });
             session.transfer(flowFile, REL_SUCCESS);
         } catch (Exception e) {
             flowFile = session.write(flowFile, new StreamCallback() {
                 @Override
                 public void process(InputStream inputStream, OutputStream outputStream) throws IOException {
-                    IOUtils.write( "{\"error\":\""+e.getMessage()+"\"}", outputStream,  StandardCharsets.UTF_8);
+                    IOUtils.write( "{'error':'"+e.getMessage()+"','stack':'"+ ExceptionUtils.getStackTrace(e)+"'}", outputStream,  StandardCharsets.UTF_8);
                 }
             });
+            logger.error(e.getStackTrace().toString());
             session.transfer(flowFile, REL_FAILURE);
         }
 

@@ -20,16 +20,14 @@ import static org.apache.commons.io.FileUtils.getFile;
  */
 public class NifiFlowFileAccess implements Access {
 
-    ProcessSession session;
-    FlowFile flowFile;
     InputStream data;
 
 
 
-    public NifiFlowFileAccess(ProcessSession session, FlowFile flowFile) {
-        this.session=session;
-        this.flowFile=flowFile;
-        this.flowFile.getId();
+
+
+    public NifiFlowFileAccess(InputStream inputStream) {
+        this.data=inputStream;
     }
 
     /**
@@ -39,12 +37,6 @@ public class NifiFlowFileAccess implements Access {
      */
     @Override
     public InputStream getInputStream() throws IOException {
-        this.session.read(this.flowFile, new InputStreamCallback() {
-            @Override
-            public void process(final InputStream inputStream) throws IOException {
-                data=inputStream;
-            }
-        });
         return data;
     }
 
@@ -62,7 +54,7 @@ public class NifiFlowFileAccess implements Access {
     public boolean equals(Object o) {
         if (o instanceof NifiFlowFileAccess) {
             NifiFlowFileAccess access  = (NifiFlowFileAccess) o;
-            return flowFile.getId()==access.getFlowFile().getId();
+            return toString()==access.toString();
         } else {
             return false;
         }
@@ -76,22 +68,7 @@ public class NifiFlowFileAccess implements Access {
 
     @Override
     public String toString() {
-        return String.valueOf(this.flowFile.getId());
+        return String.valueOf(this.data.toString());
     }
 
-    public ProcessSession getSession() {
-        return session;
-    }
-
-    public void setSession(ProcessSession session) {
-        this.session = session;
-    }
-
-    public FlowFile getFlowFile() {
-        return flowFile;
-    }
-
-    public void setFlowFile(FlowFile flowFile) {
-        this.flowFile = flowFile;
-    }
 }

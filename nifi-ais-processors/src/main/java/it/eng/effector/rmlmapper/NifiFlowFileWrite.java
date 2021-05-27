@@ -24,12 +24,10 @@ public class NifiFlowFileWrite {
 
     private static final Logger logger = LoggerFactory.getLogger(RMLEngine.class);
 
-    ProcessSession session;
-    FlowFile flowFile;
+    OutputStream outputStream;
 
-    public NifiFlowFileWrite(ProcessSession session, FlowFile flowFile) {
-        this.session=session;
-        this.flowFile=flowFile;
+    public NifiFlowFileWrite( OutputStream outputStream) {
+        this.outputStream=outputStream;
     }
 
     public void writeOutputTargets(HashMap<Term, QuadStore> targets, QuadStore rmlStore, String basePath, String outputFileDefault, String outputFormatDefault) throws Exception {
@@ -49,7 +47,7 @@ public class NifiFlowFileWrite {
             }
 
             // Default target is exported separately for backwards compatibility reasons
-            if (term.getValue().equals("rmlmapper://default.store")) {
+/*            if (term.getValue().equals("rmlmapper://default.store")) {
                 logger.debug("Exporting to default Target");
                 writeOutput(store, outputFileDefault, outputFormatDefault);
             }
@@ -63,10 +61,10 @@ public class NifiFlowFileWrite {
 
                 Target target = targetFactory.getTarget(term, rmlStore);
                 String serializationFormat = target.getSerializationFormat();
-                OutputStream output = target.getOutputStream();
+                //this.outputStream = target.getOutputStream();
 
                 // Set character encoding
-                Writer out = new BufferedWriter(new OutputStreamWriter(output, Charset.defaultCharset()));
+                Writer out = new BufferedWriter(new OutputStreamWriter(this.outputStream, Charset.defaultCharset()));
 
                 // Write store to target
                 store.write(out, serializationFormat);
@@ -74,7 +72,16 @@ public class NifiFlowFileWrite {
                 // Close OS resources
                 out.close();
                 target.close();
-            }
+            }*/
+            logger.info("write to flowfile nifi");
+            Writer out = new BufferedWriter(new OutputStreamWriter(this.outputStream, Charset.defaultCharset()));
+
+            // Write store to target
+            store.write(out, outputFormatDefault);
+
+            // Close OS resources
+            out.close();
+            //target.close();
         }
 
         if (hasNoResults) {

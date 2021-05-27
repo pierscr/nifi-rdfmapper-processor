@@ -15,7 +15,9 @@ import be.ugent.rml.target.TargetFactory;
 import be.ugent.rml.term.NamedNode;
 import be.ugent.rml.term.Term;
 import ch.qos.logback.classic.Level;
+import com.jayway.jsonpath.PathNotFoundException;
 import org.apache.commons.cli.*;
+import org.apache.nifi.flowfile.FlowFile;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.slf4j.Logger;
@@ -39,12 +41,11 @@ public class RMLEngine {
     public RMLEngine(NifiFlowFileAccess nifiAccess, NifiFlowFileWrite nifiFlowFileWrite) {
         this.nifiAccess=nifiAccess;
         this.nifiFlowFileWrite=nifiFlowFileWrite;
-        logger.debug("nifi flowfile"+this.nifiAccess.getFlowFile().toString());
 
     }
 
 
-    public void run(String basePath) throws Exception {
+    public void run(String basePath,String flowfilename ) throws Exception {
 
 
 
@@ -53,7 +54,7 @@ public class RMLEngine {
             // parse the command line arguments
 
 
-                String[] opt=new String[]{basePath+"/mapping.rml.custom3.ttl"};
+                String[] opt=new String[]{basePath+"/mapping.rml.nojoin.ttl"};
                 List<InputStream> lis = Arrays.stream(opt)
                         .map(Utils::getInputStreamFromFileOrContentString)
                         .collect(Collectors.toList());
@@ -67,13 +68,13 @@ public class RMLEngine {
                 }
                 catch (RDFParseException e) {
                     logger.error(fatal, "Unable to parse mapping rules as Turtle. Does the file exist and is it valid Turtle?", e);
-                    System.exit(1);
+                    throw e;
                 }
 
 
 
 
-                RecordsFactory factory = new RecordsFactory(basePath);
+                NifiRecordsFactory factory = new NifiRecordsFactory(this.nifiAccess);
 
                 String outputFormat = "turtle";
                 QuadStore outputStore = getStoreForFormat(outputFormat);
@@ -99,27 +100,22 @@ public class RMLEngine {
                 // Get start timestamp for post mapping metadata
                 String startTimestamp = Instant.now().toString();
 
-                try {
-                    HashMap<Term, QuadStore> targets = executor.executeV5(triplesMaps, checkOptionPresence,
-                            null);
-                    QuadStore result = targets.get(new NamedNode("rmlmapper://default.store"));
+                HashMap<Term, QuadStore> targets = executor.executeV5(triplesMaps, checkOptionPresence,null);
+                QuadStore result = targets.get(new NamedNode("rmlmapper://default.store"));
 
-                    // Get stop timestamp for post mapping metadata
-                    String stopTimestamp = Instant.now().toString();
+                // Get stop timestamp for post mapping metadata
+                String stopTimestamp = Instant.now().toString();
 
-                    String outputFile = basePath+"/outputfileNifi"+nifiAccess.getFlowFile().getId()+".ttl";
-                    result.copyNameSpaces(rmlStore);
+                String outputFile = basePath+"/outputfileNifi"+flowfilename+".ttl";
+                result.copyNameSpaces(rmlStore);
 
-                    this.nifiFlowFileWrite.writeOutputTargets(targets, rmlStore, basePath, outputFile, outputFormat);
-                } catch (Exception e) {
-                    logger.error(e.getMessage());
-                }
+                this.nifiFlowFileWrite.writeOutputTargets(targets, rmlStore, basePath, outputFile, outputFormat);
 
         } catch (ParseException exp) {
-            // oops, something went wrong
-            logger.error("Parsing failed. Reason: " + exp.getMessage());
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
+            logger.error("Parsing failed. Reason: " + exp.getMessage(),exp);
+            throw exp;
+        }catch (PathNotFoundException pathErr){
+            logger.debug("PathNotFoundException: " + pathErr.getMessage(),pathErr);
         }
     }
 
