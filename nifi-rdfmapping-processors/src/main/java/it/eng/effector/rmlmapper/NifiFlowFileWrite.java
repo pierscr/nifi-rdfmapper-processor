@@ -4,23 +4,16 @@ import be.ugent.rml.Utils;
 import be.ugent.rml.store.QuadStore;
 import be.ugent.rml.store.RDF4JStore;
 import be.ugent.rml.store.SimpleQuadStore;
-import be.ugent.rml.target.Target;
-import be.ugent.rml.target.TargetFactory;
 import be.ugent.rml.term.Term;
-import org.apache.commons.io.IOUtils;
-import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.ProcessSession;
-import org.apache.nifi.processor.io.StreamCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NifiFlowFileWrite {
+public class NifiFlowFileWrite{
 
     private static final Logger logger = LoggerFactory.getLogger(RMLEngine.class);
 
@@ -30,11 +23,10 @@ public class NifiFlowFileWrite {
         this.outputStream=outputStream;
     }
 
-    public void writeOutputTargets(HashMap<Term, QuadStore> targets, QuadStore rmlStore, String basePath, String outputFileDefault, String outputFormatDefault) throws Exception {
+    public void writeOutputTargets(HashMap<Term, QuadStore> targets,  String outputFormatDefault) throws Exception {
         boolean hasNoResults = true;
 
         logger.debug("Writing to Targets: " + targets.keySet());
-        TargetFactory targetFactory = new TargetFactory(basePath);
 
         // Go over each term and export to the Target if needed
         for (Map.Entry<Term, QuadStore> termTargetMapping: targets.entrySet()) {

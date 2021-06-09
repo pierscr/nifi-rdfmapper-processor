@@ -18,12 +18,12 @@
 
     <parent>
         <groupId>it.eng.effector</groupId>
-        <artifactId>ais</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <artifactId>rdfmapping</artifactId>
+        <version>1.2-SNAPSHOT</version>
     </parent>
 
-    <artifactId>nifi-ais-nar</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>nifi-rdfmapping-nar</artifactId>
+    <version>1.2-SNAPSHOT</version>
     <packaging>nar</packaging>
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -33,8 +33,8 @@
     <dependencies>
         <dependency>
             <groupId>it.eng.effector</groupId>
-            <artifactId>nifi-ais-processors</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>nifi-rdfmapping-processors</artifactId>
+            <version>1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>

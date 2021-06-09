@@ -23,13 +23,13 @@
     </parent>
 
     <groupId>it.eng.effector</groupId>
-    <artifactId>ais</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>rdfmapping</artifactId>
+    <version>1.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>nifi-ais-processors</module>
-        <module>nifi-ais-nar</module>
+        <module>nifi-rdfmapping-processors</module>
+        <module>nifi-rdfmapping-nar</module>
     </modules>
 
     <dependencies>

@@ -1,18 +1,12 @@
 package it.eng.effector.rmlmapper;
 
 import be.ugent.rml.access.Access;
-import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.processor.ProcessSession;
-import org.apache.nifi.processor.io.InputStreamCallback;
-import org.apache.nifi.stream.io.StreamUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
 import static be.ugent.rml.Utils.getHashOfString;
-import static be.ugent.rml.Utils.getInputStreamFromFile;
 import static org.apache.commons.io.FileUtils.getFile;
 
 /**
